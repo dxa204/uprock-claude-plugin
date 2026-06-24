@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "uprock",
+  "owner": {
+    "name": "UpRock",
+    "email": "developer@uprock.com"
+  },
+  "description": "UpRock — web scraping, crawling, multi-region web search, and global uptime sweeps powered by a real worldwide device network.",
+  "plugins": [
+    {
+      "name": "uprock",
+      "source": "./",
+      "description": "UpRock: Scrape, crawl, search & sweep the web from real devices worldwide — clean, LLM-ready markdown with anti-bot, JS rendering & geo-targeting. Powered by a real global device network, not datacenter proxies. Includes an autonomous research agent.",
+      "category": "development",
+      "homepage": "https://uprock.ai",
+      "license": "MIT",
+      "keywords": ["web-scraping", "crawler", "web-search", "markdown", "research", "uptime", "performance", "geo", "mcp"]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+name: validate
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate manifest, structure, and skills
+        run: |
+          python3 - <<'PY'
+          import json, sys, os, glob, re
+          errs = []
+          for f in [".claude-plugin/plugin.json", ".claude-plugin/marketplace.json", ".mcp.json"]:
+              if not os.path.exists(f):
+                  errs.append(f"missing {f}"); continue
+              try:
+                  json.load(open(f))
+              except Exception as e:
+                  errs.append(f"invalid JSON {f}: {e}")
+          if os.path.exists(".claude-plugin/plugin.json"):
+              p = json.load(open(".claude-plugin/plugin.json"))
+              for k in ("name", "version", "description"):
+                  if not p.get(k):
+                      errs.append(f"plugin.json missing '{k}'")
+              if p.get("name") and not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", p["name"]):
+                  errs.append(f"plugin.json name not kebab-case: {p.get('name')}")
+          for entry in glob.glob(".claude-plugin/*"):
+              if os.path.isdir(entry) or not entry.endswith(".json"):
+                  errs.append(f"unexpected item in .claude-plugin/: {entry}")
+          skills = glob.glob("skills/*/SKILL.md") + glob.glob("commands/*.md")
+          if not skills:
+              errs.append("no skills or commands found")
+          for s in skills:
+              t = open(s, encoding="utf-8").read()
+              if not t.startswith("---"):
+                  errs.append(f"{s}: missing YAML frontmatter")
+              elif "description:" not in t.split("---", 2)[1]:
+                  errs.append(f"{s}: frontmatter missing 'description'")
+          if errs:
+              print("VALIDATION FAILED:")
+              for e in errs:
+                  print("  -", e)
+              sys.exit(1)
+          print("manifest + structure + skills OK")
+          PY
+      - name: claude plugin validate (best-effort)
+        continue-on-error: true
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash || true
+          export PATH="$HOME/.local/bin:$PATH"
+          claude plugin validate . || echo "claude CLI validate unavailable in CI (non-blocking)"

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "uprock": {
+      "type": "http",
+      "url": "${user_config.mcp_base_url}/${user_config.api_key}/mcp"
+    }
+  }
+}
